@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RubLicker</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #333;
+            --click-area-bg: #808080;
+            --click-area-border: #696969;
+            --upgrade-btn-bg: #4CAF50;
+            --boost-btn-bg: #2196F3;
+            --border-color: #ddd;
+            --chat-bg: #f9f9f9;
+            --modal-bg: white;
+            --username-color: #2196F6;
+            --tab-inactive: #e0e0e0;
+            --tab-active: white;
+            --transfer-btn-bg: #FF9800;
+            --error-color: #f44336;
+            --success-color: #4CAF50;
+            --skin-card-bg: #ffffff;
+            --skin-card-border: #e0e0e0;
+            --autoclicker-btn-bg: #FFC107;
+            --autominer-btn-bg: #f44336;
+        }
+
+        .dark-theme {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --click-area-bg: #505050;
+            --click-area-border: #404040;
+            --upgrade-btn-bg: #2E7D32;
+            --boost-btn-bg: #1565C0;
+            --border-color: #444;
+            --chat-bg: #252525;
+            --modal-bg: #2d2d2d;
+            --username-color: #64B5F6;
+            --tab-inactive: #333;
+            --tab-active: #1e1e1e;
+            --transfer-btn-bg: #E65100;
+            --error-color: #D32F2F;
+            --success-color: #388E3C;
+            --skin-card-bg: #2d2d2d;
+            --skin-card-border: #444;
+            --autoclicker-btn-bg: #FFA000;
+            --autominer-btn-bg: #D32F2F;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #game-container {
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, opacity 0.5s, transform 0.5s;
+            opacity: 0;
+            transform: translateY(20px);
+            display: none;
+        }
+
+        #game-container { display: none; }
+        #game-container.loaded { 
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #tabs {
+            display: flex;
+            margin-bottom: 15px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: var(--tab-inactive);
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            flex-grow: 1;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .tab.active {
+            background-color: var(--tab-active);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #settings-content {
+            padding: 15px;
+        }
+
+        .setting-group {
+            margin-bottom: 15px;
+        }
+
+        .setting-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .setting-option {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .setting-option input {
+            margin-right: 10px;
+        }
+
+        #click-area {
+            width: 200px;
+            height: 200px;
+            background-color: var(--click-area-bg);
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            border: 4px solid var(--click-area-border);
+            transition: background-color 0.3s, border-color 0.3s;
+            position: relative;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+
+        #game-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            margin: 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .stat-value {
+            font-weight: bold;
+        }
+
+        .click-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 3px;
+        }
+
+        .click-per {
+            background-color: #4CAF50;
+        }
+
+        .click-auto {
+            background-color: #FFC107;
+        }
+
+        .click-miner {
+            background-color: #f44336;
+        }
+
+        #leaderboard {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        #leaderboard th, #leaderboard td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
+        }
+
+        #name-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #player-name {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        #name-submit {
+            background-color: var(--upgrade-btn-bg);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .click-effect {
+            position: absolute;
+            font-size: 20px;
+            color: #00ff00;
+            animation: float 0.5s forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+
+        .fireworks-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            animation: fireworks 0.5s forwards;
+        }
+
+        @keyframes fireworks {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+        }
+
+        #chat-container {
+            width: 100%;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            transition: border-color 0.3s;
+        }
+
+        #chat-messages {
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--chat-bg);
+            transition: all 0.3s;
+        }
+
+        #chat-input {
+            width: calc(100% - 80px);
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        #chat-send {
+            width: 70px;
+            background-color: var(--upgrade-btn-bg);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .message {
+            margin-bottom: 5px;
+        }
+
+        .message-username {
+            font-weight: bold;
+            color: var(--username-color);
+            transition: color 0.3s;
+        }
+
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        #modal {
+            background-color: var(--modal-bg);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        #modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #modal-yes {
+            background-color: var(--upgrade-btn-bg);
+            color: white;
+        }
+
+        #modal-no {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #transfer-content {
+            padding: 15px;
+        }
+
+        .transfer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .transfer-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .transfer-input-group label {
+            font-weight: bold;
+        }
+
+        .transfer-input {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        .transfer-btn {
+            background-color: var(--transfer-btn-bg);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .transfer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .transfer-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .transfer-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .transfer-error {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        #shop-content {
+            padding: 15px;
+        }
+
+        .shop-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .shop-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .shop-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: var(--tab-inactive);
+            border-radius: 5px;
+            margin-right: 5px;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .shop-tab.active {
+            background-color: var(--tab-active);
+            font-weight: bold;
+        }
+
+        .shop-tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .shop-tab-content.active {
+            display: grid;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .shop-items-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .skin-card {
+            background-color: var(--skin-card-bg);
+            border: 1px solid var(--skin-card-border);
+            border-radius: 8px;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+
+        .skin-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .skin-description {
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .skin-price {
+            color: var(--success-color);
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .skin-btn {
+            background-color: var(--upgrade-btn-bg);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .autoclicker-btn {
+            background-color: var(--autoclicker-btn-bg);
+        }
+
+        .autominer-btn {
+            background-color: var(--autominer-btn-bg);
+        }
+
+        .skin-btn:disabled {
+            background-color: var(--tab-inactive);
+            cursor: not-allowed;
+        }
+
+        .purchase-count {
+            font-weight: normal;
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 12px;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #loading-game-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        #loading-ruble {
+            font-size: 80px;
+            color: #4CAF50;
+            animation: pulse 1.5s infinite;
+        }
+
+        #loading-heart {
+            display: inline-block;
+            opacity: 0;
+            transform: scale(0);
+            animation: fadeIn 0.5s forwards;
+            animation-delay: 1s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #loading-bar-container {
+            width: 250px;
+            height: 10px;
+            background-color: #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #4CAF50;
+            animation: loadBarAnim 3s linear forwards;
+        }
+
+        @keyframes loadBarAnim {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        #loading-percentage {
+            font-size: 18px;
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div id="loading-content">
+            <div id="loading-ruble">₽</div>
+            <div id="loading-game-title">RubLicker <span id="loading-heart">💜</span></div>
+            <div id="loading-bar-container">
+                <div id="loading-bar"></div>
+            </div>
+            <div id="loading-percentage">0%</div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="tabs">
+            <div class="tab active" data-tab="main" id="main-tab">Основное</div>
+            <div class="tab" data-tab="transfer" id="transfer-tab">Перевод</div>
+            <div class="tab" data-tab="shop" id="shop-tab">Магазин</div>
+            <div class="tab" data-tab="referral" id="referral-tab">Рефералка</div>
+            <div class="tab" data-tab="settings" id="settings-tab">Настройки</div>
+        </div>
+
+        <div id="main-content" class="tab-content active">
+            <h1 id="game-title">RubLicker</h1>
+            
+            <div id="name-input-container">
+                <input type="text" id="player-name" placeholder="Введите ваш ник" maxlength="20">
+                <button id="name-submit">OK</button>
+            </div>
+
+            <div id="click-area">₽</div>
+
+            <div class="stat"><span id="balance-text">Баланс:</span> <span id="coins">0</span> ₽</div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="click-icon click-per"></span>
+                    <span id="per-click-stat">1</span> ₽
+                </div>
+                <div class="stat-item">
+                    <span class="click-icon click-auto"></span>
+                    <span id="auto-click-stat">0</span> ₽/сек
+                </div>
+                <div class="stat-item">
+                    <span class="click-icon click-miner"></span>
+                    <span id="auto-miner-stat">0</span> ₽/час
+                </div>
+            </div>
+
+            <h2 id="leaderboard-title">Таблица лидеров</h2>
+            <table id="leaderboard">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th id="leaderboard-player">Игрок</th>
+                        <th id="leaderboard-balance">Баланс</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="3">Загрузка...</td></tr>
+                </tbody>
+            </table>
+
+            <div id="chat-container">
+                <h2 id="chat-title">Чат</h2>
+                <div id="chat-messages"></div>
+                <div>
+                    <input type="text" id="chat-input" placeholder="Введите сообщение..." maxlength="100">
+                    <button id="chat-send">Отправить</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="transfer-content" class="tab-content">
+            <h2 id="transfer-title">Перевод монет</h2>
+            <div class="transfer-form">
+                <div class="transfer-input-group">
+                    <label for="recipient-name" id="recipient-label">Ник получателя:</label>
+                    <input type="text" id="recipient-name" class="transfer-input" placeholder="Введите ник игрока" maxlength="20">
+                </div>
+                <div class="transfer-input-group">
+                    <label for="transfer-amount" id="amount-label">Сумма перевода:</label>
+                    <input type="number" id="transfer-amount" class="transfer-input" placeholder="Введите сумму" min="1">
+                </div>
+                <button id="transfer-btn" class="transfer-btn">Перевести</button>
+                <div id="transfer-message" class="transfer-message"></div>
+            </div>
+        </div>
+
+        <div id="shop-content" class="tab-content">
+            <h2 id="shop-title">Магазин кликов</h2>
+            
+            <div class="shop-tabs">
+                <div class="shop-tab active" data-shop-tab="click">Клики</div>
+                <div class="shop-tab" data-shop-tab="autoclick">Авто-клики</div>
+                <div class="shop-tab" data-shop-tab="autominer">Авто-майнеры</div>
+            </div>
+            
+            <div id="click-tab" class="shop-tab-content active">
+                <div class="shop-items-container">
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>1 клик</span>
+                            <span class="purchase-count" id="click-1-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-1-price">Цена: 64 ₽</div>
+                        <button class="skin-btn" id="buy-click-1">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>8 кликов</span>
+                            <span class="purchase-count" id="click-8-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-8-price">Цена: 1.024 ₽</div>
+                        <button class="skin-btn" id="buy-click-8">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>64 клика</span>
+                            <span class="purchase-count" id="click-64-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-64-price">Цена: 16.384 ₽</div>
+                        <button class="skin-btn" id="buy-click-64">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>512 кликов</span>
+                            <span class="purchase-count" id="click-512-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-512-price">Цена: 262.144 ₽</div>
+                        <button class="skin-btn" id="buy-click-512">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>4.096 кликов</span>
+                            <span class="purchase-count" id="click-4096-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-4096-price">Цена: 4.194.304 ₽</div>
+                        <button class="skin-btn" id="buy-click-4096">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>32.768 кликов</span>
+                            <span class="purchase-count" id="click-32768-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="click-32768-price">Цена: 67.108.864 ₽</div>
+                        <button class="skin-btn" id="buy-click-32768">Купить</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="autoclick-tab" class="shop-tab-content">
+                <div class="shop-items-container">
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>1 авто-клик</span>
+                            <span class="purchase-count" id="autoclick-1-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-1-price">Цена: 16 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-1">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>8 авто-кликов</span>
+                            <span class="purchase-count" id="autoclick-8-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-8-price">Цена: 256 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-8">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>64 авто-клика</span>
+                            <span class="purchase-count" id="autoclick-64-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-64-price">Цена: 4.096 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-64">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>512 авто-кликов</span>
+                            <span class="purchase-count" id="autoclick-512-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-512-price">Цена: 65.536 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-512">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>4.096 авто-кликов</span>
+                            <span class="purchase-count" id="autoclick-4096-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-4096-price">Цена: 1.048.576 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-4096">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>32.768 авто-кликов</span>
+                            <span class="purchase-count" id="autoclick-32768-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autoclick-32768-price">Цена: 16.777.216 ₽</div>
+                        <button class="skin-btn autoclicker-btn" id="buy-autoclick-32768">Купить</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="autominer-tab" class="shop-tab-content">
+                <div class="shop-items-container">
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>1 клик/час</span>
+                            <span class="purchase-count" id="autominer-1-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-1-price">Цена: 32 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-1">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>8 кликов/час</span>
+                            <span class="purchase-count" id="autominer-8-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-8-price">Цена: 512 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-8">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>64 клика/час</span>
+                            <span class="purchase-count" id="autominer-64-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-64-price">Цена: 8.192 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-64">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>512 кликов/час</span>
+                            <span class="purchase-count" id="autominer-512-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-512-price">Цена: 131.072 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-512">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>4.096 кликов/час</span>
+                            <span class="purchase-count" id="autominer-4096-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-4096-price">Цена: 2.097.152 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-4096">Купить</button>
+                    </div>
+                    
+                    <div class="skin-card">
+                        <div class="skin-title">
+                            <span>32.768 кликов/час</span>
+                            <span class="purchase-count" id="autominer-32768-count">Куплено: 0</span>
+                        </div>
+                        <div class="skin-price" id="autominer-32768-price">Цена: 33.445.532 ₽</div>
+                        <button class="skin-btn autominer-btn" id="buy-autominer-32768">Купить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-content" class="tab-content">
+            <div class="setting-group">
+                <div class="setting-title" id="theme-title">Тема</div>
+                <div class="setting-option">
+                    <input type="radio" id="theme-light" name="theme" value="light" checked>
+                    <label for="theme-light" id="theme-light-label">Светлая</label>
+                </div>
+                <div class="setting-option">
+                    <input type="radio" id="theme-dark" name="theme" value="dark">
+                    <label for="theme-dark" id="theme-dark-label">Тёмная</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-title" id="language-title">Язык</div>
+                <div class="setting-option">
+                    <input type="radio" id="lang-ru" name="language" value="ru" checked>
+                    <label for="lang-ru" id="lang-ru-label">Русский</label>
+                </div>
+                <div class="setting-option">
+                    <input type="radio" id="lang-en" name="language" value="en">
+                    <label for="lang-en" id="lang-en-label">English</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="referral-content" class="tab-content">
+            <h3>Ваши приглашённые</h3>
+            <div id="referral-count">Приглашённых: 0</div>
+
+            <h3>Топ по приглашениям</h3>
+            <table id="referral-leaderboard">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Игрок</th>
+                        <th>Приглашённых</th>
+                    </tr>
+                </thead>
+                <tbody id="referral-leaderboard-body">
+                    <tr><td colspan="3">Загрузка...</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Реферальная ссылка</h2>
+            <p>Пригласите друга и получайте бонусы!</p>
+            <input type="text" id="referral-link" class="transfer-input" readonly>
+            <button onclick="copyReferralLink()" class="transfer-btn">Скопировать ссылку</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal">
+            <p id="modal-text">Вы точно хотите поменять ник за 1.000.000 ₽?</p>
+            <div id="modal-buttons">
+                <button id="modal-yes" class="modal-btn">Да</button>
+                <button id="modal-no" class="modal-btn">Нет</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let coins = 0;
+        let perClick = 1;
+        let autoClick = 0;
+        let autoMiner = 0;
+        let playerName = '';
+        let nameChangeCount = 0;
+        let nameChangeCost = 1000000;
+        let darkTheme = false;
+        let language = 'ru';
+        let lastUpdateTime = Date.now();
+        let autoClickInterval = null;
+        
+        // Магазин кликов
+        let clickUpgrades = {
+            1: { basePrice: 64, count: 0, multiplier: 1.6 },
+            8: { basePrice: 1024, count: 0, multiplier: 1.6 },
+            64: { basePrice: 16384, count: 0, multiplier: 1.6 },
+            512: { basePrice: 262144, count: 0, multiplier: 1.6 },
+            4096: { basePrice: 4194304, count: 0, multiplier: 1.6 },
+            32768: { basePrice: 67108864, count: 0, multiplier: 1.6 }
+        };
+        
+        // Магазин авто-кликов
+        let autoClickUpgrades = {
+            1: { basePrice: 16, count: 0, multiplier: 1.3 },
+            8: { basePrice: 256, count: 0, multiplier: 1.3 },
+            64: { basePrice: 4096, count: 0, multiplier: 1.3 },
+            512: { basePrice: 65536, count: 0, multiplier: 1.3 },
+            4096: { basePrice: 1048576, count: 0, multiplier: 1.3 },
+            32768: { basePrice: 16777216, count: 0, multiplier: 1.3 }
+        };
+        
+        // Магазин авто-майнеров
+        let autoMinerUpgrades = {
+            1: { basePrice: 32, count: 0, multiplier: 1.4 },
+            8: { basePrice: 512, count: 0, multiplier: 1.4 },
+            64: { basePrice: 8192, count: 0, multiplier: 1.4 },
+            512: { basePrice: 131072, count: 0, multiplier: 1.4 },
+            4096: { basePrice: 2097152, count: 0, multiplier: 1.4 },
+            32768: { basePrice: 33445532, count: 0, multiplier: 1.4 }
+        };
+        
+        // Полная локализация
+        const translations = {
+            ru: {
+                title: "RubLicker",
+                mainTab: "Основное",
+                transferTab: "Перевод",
+                shopTab: "Магазин",
+                settingsTab: "Настройки",
+                namePlaceholder: "Введите ваш ник",
+                balance: "Баланс",
+                leaderboard: "Таблица лидеров",
+                player: "Игрок",
+                chat: "Чат",
+                chatPlaceholder: "Введите сообщение...",
+                send: "Отправить",
+                themeTitle: "Тема",
+                lightTheme: "Светлая",
+                darkTheme: "Тёмная",
+                languageTitle: "Язык",
+                russian: "Русский",
+                english: "English",
+                nameChangeConfirm: "Вы точно хотите поменять ник за",
+                notEnoughCoins: "У вас недостаточно монет (необходимо",
+                yes: "Да",
+                no: "Нет",
+                loading: "Загрузка...",
+                system: "Система",
+                nameSet: "Игрок установил ник",
+                nameChanged: "Игрок сменил ник на",
+                transferTitle: "Перевод монет",
+                recipientLabel: "Ник получателя:",
+                amountLabel: "Сумма перевода:",
+                transferBtn: "Перевести",
+                transferSuccess: "Перевод успешно выполнен!",
+                transferError: "Ошибка перевода:",
+                transferSelfError: "Нельзя перевести себе",
+                transferNoRecipient: "Получатель не найден",
+                transferNotEnough: "Недостаточно средств",
+                transferInvalidAmount: "Неверная сумма",
+                transferCompleted: "Вы перевели {amount} ₽ игроку {recipient}",
+                transferReceived: "Вы получили {amount} ₽ от игрока {sender}",
+                shopTitle: "Магазин кликов",
+                clickTab: "Клики",
+                autoclickTab: "Авто-клики",
+                autominerTab: "Авто-майнеры",
+                purchased: "Куплено:",
+                offlineIncome: "Оффлайн доход: {amount} ₽ за {hours} часов"
+            },
+            en: {
+                title: "RubLicker",
+                mainTab: "Main",
+                transferTab: "Transfer",
+                shopTab: "Shop",
+                settingsTab: "Settings",
+                namePlaceholder: "Enter your nickname",
+                balance: "Balance",
+                leaderboard: "Leaderboard",
+                player: "Player",
+                chat: "Chat",
+                chatPlaceholder: "Type a message...",
+                send: "Send",
+                themeTitle: "Theme",
+                lightTheme: "Light",
+                darkTheme: "Dark",
+                languageTitle: "Language",
+                russian: "Russian",
+                english: "English",
+                nameChangeConfirm: "Are you sure you want to change nickname for",
+                notEnoughCoins: "Not enough coins (need",
+                yes: "Yes",
+                no: "No",
+                loading: "Loading...",
+                system: "System",
+                nameSet: "Player set nickname to",
+                nameChanged: "Player changed nickname to",
+                transferTitle: "Transfer coins",
+                recipientLabel: "Recipient nickname:",
+                amountLabel: "Transfer amount:",
+                transferBtn: "Transfer",
+                transferSuccess: "Transfer completed successfully!",
+                transferError: "Transfer error:",
+                transferSelfError: "Cannot transfer to yourself",
+                transferNoRecipient: "Recipient not found",
+                transferNotEnough: "Not enough coins",
+                transferInvalidAmount: "Invalid amount",
+                transferCompleted: "You transferred {amount} ₽ to {recipient}",
+                transferReceived: "You received {amount} ₽ from {sender}",
+                shopTitle: "Click Store",
+                clickTab: "Clicks",
+                autoclickTab: "Auto-Clicks",
+                autominerTab: "Auto-Miners",
+                purchased: "Purchased:",
+                offlineIncome: "Offline income: {amount} ₽ for {hours} hours"
+            }
+        };
+
+        // Элементы DOM
+        const elements = {
+            gameContainer: document.getElementById('game-container'),
+            gameTitle: document.getElementById('game-title'),
+            mainTab: document.getElementById('main-tab'),
+            transferTab: document.getElementById('transfer-tab'),
+            shopTab: document.getElementById('shop-tab'),
+            settingsTab: document.getElementById('settings-tab'),
+            nameInput: document.getElementById('player-name'),
+            nameSubmit: document.getElementById('name-submit'),
+            coins: document.getElementById('coins'),
+            balanceText: document.getElementById('balance-text'),
+            perClickStat: document.getElementById('per-click-stat'),
+            autoClickStat: document.getElementById('auto-click-stat'),
+            autoMinerStat: document.getElementById('auto-miner-stat'),
+            leaderboardTitle: document.getElementById('leaderboard-title'),
+            leaderboardPlayer: document.getElementById('leaderboard-player'),
+            leaderboardBalance: document.getElementById('leaderboard-balance'),
+            chatTitle: document.getElementById('chat-title'),
+            chatInput: document.getElementById('chat-input'),
+            chatSend: document.getElementById('chat-send'),
+            themeTitle: document.getElementById('theme-title'),
+            themeLightLabel: document.getElementById('theme-light-label'),
+            themeDarkLabel: document.getElementById('theme-dark-label'),
+            languageTitle: document.getElementById('language-title'),
+            langRuLabel: document.getElementById('lang-ru-label'),
+            langEnLabel: document.getElementById('lang-en-label'),
+            modalText: document.getElementById('modal-text'),
+            modalYes: document.getElementById('modal-yes'),
+            modalNo: document.getElementById('modal-no'),
+            transferTitle: document.getElementById('transfer-title'),
+            recipientName: document.getElementById('recipient-name'),
+            recipientLabel: document.getElementById('recipient-label'),
+            transferAmount: document.getElementById('transfer-amount'),
+            amountLabel: document.getElementById('amount-label'),
+            transferBtn: document.getElementById('transfer-btn'),
+            transferMessage: document.getElementById('transfer-message'),
+            shopTitle: document.getElementById('shop-title'),
+            clickArea: document.getElementById('click-area'),
+            leaderboard: document.getElementById('leaderboard-body'),
+            chatMessages: document.getElementById('chat-messages'),
+            modalOverlay: document.getElementById('modal-overlay'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            shopTabs: document.querySelectorAll('.shop-tab'),
+            shopTabContents: document.querySelectorAll('.shop-tab-content'),
+            themeLight: document.getElementById('theme-light'),
+            themeDark: document.getElementById('theme-dark'),
+            langRu: document.getElementById('lang-ru'),
+            langEn: document.getElementById('lang-en'),
+            buyClick1: document.getElementById('buy-click-1'),
+            buyClick8: document.getElementById('buy-click-8'),
+            buyClick64: document.getElementById('buy-click-64'),
+            buyClick512: document.getElementById('buy-click-512'),
+            buyClick4096: document.getElementById('buy-click-4096'),
+            buyClick32768: document.getElementById('buy-click-32768'),
+            click1Price: document.getElementById('click-1-price'),
+            click8Price: document.getElementById('click-8-price'),
+            click64Price: document.getElementById('click-64-price'),
+            click512Price: document.getElementById('click-512-price'),
+            click4096Price: document.getElementById('click-4096-price'),
+            click32768Price: document.getElementById('click-32768-price'),
+            click1Count: document.getElementById('click-1-count'),
+            click8Count: document.getElementById('click-8-count'),
+            click64Count: document.getElementById('click-64-count'),
+            click512Count: document.getElementById('click-512-count'),
+            click4096Count: document.getElementById('click-4096-count'),
+            click32768Count: document.getElementById('click-32768-count'),
+            buyAutoClick1: document.getElementById('buy-autoclick-1'),
+            buyAutoClick8: document.getElementById('buy-autoclick-8'),
+            buyAutoClick64: document.getElementById('buy-autoclick-64'),
+            buyAutoClick512: document.getElementById('buy-autoclick-512'),
+            buyAutoClick4096: document.getElementById('buy-autoclick-4096'),
+            buyAutoClick32768: document.getElementById('buy-autoclick-32768'),
+            autoClick1Price: document.getElementById('autoclick-1-price'),
+            autoClick8Price: document.getElementById('autoclick-8-price'),
+            autoClick64Price: document.getElementById('autoclick-64-price'),
+            autoClick512Price: document.getElementById('autoclick-512-price'),
+            autoClick4096Price: document.getElementById('autoclick-4096-price'),
+            autoClick32768Price: document.getElementById('autoclick-32768-price'),
+            autoClick1Count: document.getElementById('autoclick-1-count'),
+            autoClick8Count: document.getElementById('autoclick-8-count'),
+            autoClick64Count: document.getElementById('autoclick-64-count'),
+            autoClick512Count: document.getElementById('autoclick-512-count'),
+            autoClick4096Count: document.getElementById('autoclick-4096-count'),
+            autoClick32768Count: document.getElementById('autoclick-32768-count'),
+            buyAutoMiner1: document.getElementById('buy-autominer-1'),
+            buyAutoMiner8: document.getElementById('buy-autominer-8'),
+            buyAutoMiner64: document.getElementById('buy-autominer-64'),
+            buyAutoMiner512: document.getElementById('buy-autominer-512'),
+            buyAutoMiner4096: document.getElementById('buy-autominer-4096'),
+            buyAutoMiner32768: document.getElementById('buy-autominer-32768'),
+            autoMiner1Price: document.getElementById('autominer-1-price'),
+            autoMiner8Price: document.getElementById('autominer-8-price'),
+            autoMiner64Price: document.getElementById('autominer-64-price'),
+            autoMiner512Price: document.getElementById('autominer-512-price'),
+            autoMiner4096Price: document.getElementById('autominer-4096-price'),
+            autoMiner32768Price: document.getElementById('autominer-32768-price'),
+            autoMiner1Count: document.getElementById('autominer-1-count'),
+            autoMiner8Count: document.getElementById('autominer-8-count'),
+            autoMiner64Count: document.getElementById('autominer-64-count'),
+            autoMiner512Count: document.getElementById('autominer-512-count'),
+            autoMiner4096Count: document.getElementById('autominer-4096-count'),
+            autoMiner32768Count: document.getElementById('autominer-32768-count'),
+            loadingScreen: document.getElementById('loading-screen')
+        };
+
+        // Инициализация игры
+        function init() {
+            const bar = document.getElementById("loading-bar");
+            const percentageElement = document.getElementById('loading-percentage');
+            let startTime = Date.now();
+
+            const updatePercentage = () => {
+                const elapsed = Date.now() - startTime;
+                const percentage = Math.min(Math.floor((elapsed / 3000) * 100), 100);
+                percentageElement.textContent = `${percentage}%`;
+                if (percentage < 100) {
+                    requestAnimationFrame(updatePercentage);
+                }
+            };
+
+            updatePercentage();
+
+            bar.addEventListener("animationend", () => {
+                percentageElement.textContent = '100%';
+                elements.loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    elements.loadingScreen.style.display = 'none';
+                    elements.gameContainer.classList.add('loaded');
+                    initializeGame();
+                }, 500);
+            });
+        }
+
+        // Основная инициализация игры
+        function initializeGame() {
+            generateReferralLink();
+            loadGame();
+            setupEventListeners();
+            updateLeaderboard();
+            applyTheme();
+            applyLanguage();
+            updateAllShopButtons();
+            startAutoClicker();
+            checkOfflineIncome();
+            updateStats();
+        }
+
+        // Обработчики событий
+        function setupEventListeners() {
+            document.getElementById('referral-tab').addEventListener('click', () => switchTab('referral'));
+            elements.clickArea.addEventListener('touchstart', handleTouch, { passive: false });
+            elements.clickArea.addEventListener('click', handleClick);
+            elements.nameSubmit.addEventListener('click', showNameChangeModal);
+            elements.nameInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') showNameChangeModal();
+            });
+            elements.modalYes.addEventListener('click', confirmNameChange);
+            elements.modalNo.addEventListener('click', cancelNameChange);
+            elements.chatSend.addEventListener('click', sendChatMessage);
+            elements.chatInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+            elements.shopTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchShopTab(tab.dataset.shopTab));
+            });
+            elements.themeLight.addEventListener('change', () => {
+                if (elements.themeLight.checked) {
+                    darkTheme = false;
+                    applyTheme();
+                    saveGame();
+                }
+            });
+            elements.themeDark.addEventListener('change', () => {
+                if (elements.themeDark.checked) {
+                    darkTheme = true;
+                    applyTheme();
+                    saveGame();
+                }
+            });
+            elements.langRu.addEventListener('change', () => {
+                if (elements.langRu.checked) {
+                    language = 'ru';
+                    applyLanguage();
+                    saveGame();
+                }
+            });
+            elements.langEn.addEventListener('change', () => {
+                if (elements.langEn.checked) {
+                    language = 'en';
+                    applyLanguage();
+                    saveGame();
+                }
+            });
+            elements.transferBtn.addEventListener('click', transferCoins);
+            elements.transferAmount.addEventListener('keypress', e => {
+                if (e.key === 'Enter') transferCoins();
+            });
+            elements.buyClick1.addEventListener('click', () => buyClickUpgrade(1));
+            elements.buyClick8.addEventListener('click', () => buyClickUpgrade(8));
+            elements.buyClick64.addEventListener('click', () => buyClickUpgrade(64));
+            elements.buyClick512.addEventListener('click', () => buyClickUpgrade(512));
+            elements.buyClick4096.addEventListener('click', () => buyClickUpgrade(4096));
+            elements.buyClick32768.addEventListener('click', () => buyClickUpgrade(32768));
+            elements.buyAutoClick1.addEventListener('click', () => buyAutoClickUpgrade(1));
+            elements.buyAutoClick8.addEventListener('click', () => buyAutoClickUpgrade(8));
+            elements.buyAutoClick64.addEventListener('click', () => buyAutoClickUpgrade(64));
+            elements.buyAutoClick512.addEventListener('click', () => buyAutoClickUpgrade(512));
+            elements.buyAutoClick4096.addEventListener('click', () => buyAutoClickUpgrade(4096));
+            elements.buyAutoClick32768.addEventListener('click', () => buyAutoClickUpgrade(32768));
+            elements.buyAutoMiner1.addEventListener('click', () => buyAutoMinerUpgrade(1));
+            elements.buyAutoMiner8.addEventListener('click', () => buyAutoMinerUpgrade(8));
+            elements.buyAutoMiner64.addEventListener('click', () => buyAutoMinerUpgrade(64));
+            elements.buyAutoMiner512.addEventListener('click', () => buyAutoMinerUpgrade(512));
+            elements.buyAutoMiner4096.addEventListener('click', () => buyAutoMinerUpgrade(4096));
+            elements.buyAutoMiner32768.addEventListener('click', () => buyAutoMinerUpgrade(32768));
+        }
+
+        // Переключение вкладок магазина
+        function switchShopTab(tabId) {
+            elements.shopTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.shopTab === tabId);
+            });
+            elements.shopTabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `${tabId}-tab`);
+            });
+        }
+
+        // Покупка улучшения кликов
+        function buyClickUpgrade(amount) {
+            const upgrade = clickUpgrades[amount];
+            const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+            
+            if (coins >= currentPrice) {
+                coins -= currentPrice;
+                perClick += amount;
+                upgrade.count++;
+                
+                updateUI();
+                updateAllShopButtons();
+                saveGame();
+                updateStats();
+            }
+        }
+        
+        // Покупка авто-кликов
+        function buyAutoClickUpgrade(amount) {
+            const upgrade = autoClickUpgrades[amount];
+            const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+            
+            if (coins >= currentPrice) {
+                coins -= currentPrice;
+                autoClick += amount;
+                upgrade.count++;
+                
+                updateUI();
+                updateAllShopButtons();
+                saveGame();
+                updateStats();
+                startAutoClicker();
+            }
+        }
+        
+        // Покупка авто-майнеров
+        function buyAutoMinerUpgrade(amount) {
+            const upgrade = autoMinerUpgrades[amount];
+            const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+            
+            if (coins >= currentPrice) {
+                coins -= currentPrice;
+                autoMiner += amount;
+                upgrade.count++;
+                
+                updateUI();
+                updateAllShopButtons();
+                saveGame();
+                updateStats();
+            }
+        }
+
+        // Обновление всех кнопок магазина
+        function updateAllShopButtons() {
+            updateShopButtons();
+            updateAutoClickButtons();
+            updateAutoMinerButtons();
+        }
+
+        // Обновление кнопок магазина
+        function updateShopButtons() {
+            const lang = translations[language];
+            
+            for (const amount in clickUpgrades) {
+                const upgrade = clickUpgrades[amount];
+                const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+                document.getElementById(`click-${amount}-price`).textContent = `${lang.shopTitle === "Магазин кликов" ? "Цена" : "Price"}: ${formatNumber(currentPrice)} ₽`;
+                document.getElementById(`click-${amount}-count`).textContent = `${lang.purchased} ${upgrade.count}`;
+                document.getElementById(`buy-click-${amount}`).disabled = coins < currentPrice;
+            }
+        }
+        
+        // Обновление кнопок авто-кликов
+        function updateAutoClickButtons() {
+            const lang = translations[language];
+            
+            for (const amount in autoClickUpgrades) {
+                const upgrade = autoClickUpgrades[amount];
+                const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+                document.getElementById(`autoclick-${amount}-price`).textContent = `${lang.shopTitle === "Магазин кликов" ? "Цена" : "Price"}: ${formatNumber(currentPrice)} ₽`;
+                document.getElementById(`autoclick-${amount}-count`).textContent = `${lang.purchased} ${upgrade.count}`;
+                document.getElementById(`buy-autoclick-${amount}`).disabled = coins < currentPrice;
+            }
+        }
+        
+        // Обновление кнопок авто-майнеров
+        function updateAutoMinerButtons() {
+            const lang = translations[language];
+            
+            for (const amount in autoMinerUpgrades) {
+                const upgrade = autoMinerUpgrades[amount];
+                const currentPrice = Math.floor(upgrade.basePrice * Math.pow(upgrade.multiplier, upgrade.count));
+                document.getElementById(`autominer-${amount}-price`).textContent = `${lang.shopTitle === "Магазин кликов" ? "Цена" : "Price"}: ${formatNumber(currentPrice)} ₽`;
+                document.getElementById(`autominer-${amount}-count`).textContent = `${lang.purchased} ${upgrade.count}`;
+                document.getElementById(`buy-autominer-${amount}`).disabled = coins < currentPrice;
+            }
+        }
+
+        // Авто-кликер
+        function startAutoClicker() {
+            if (autoClickInterval) {
+                clearInterval(autoClickInterval);
+            }
+            
+            if (autoClick > 0) {
+                autoClickInterval = setInterval(() => {
+                    addCoins(autoClick);
+                }, 1000);
+            }
+        }
+
+        // Проверка оффлайн дохода
+        function checkOfflineIncome() {
+            const lastPlayTime = localStorage.getItem('lastPlayTime');
+            if (lastPlayTime && autoMiner > 0) {
+                const now = Date.now();
+                const diff = now - parseInt(lastPlayTime);
+                const hours = Math.min(Math.floor(diff / (1000 * 60 * 60)), 3);
+                
+                if (hours > 0) {
+                    const income = autoMiner * hours;
+                    coins += income;
+                    updateUI();
+                    saveGame();
+                    updateStats();
+                    
+                    const lang = translations[language];
+                    const message = lang.offlineIncome
+                        .replace('{amount}', formatNumber(income))
+                        .replace('{hours}', hours);
+                    addChatMessage(lang.system, message);
+                }
+            }
+            localStorage.setItem('lastPlayTime', Date.now());
+        }
+
+        // Обновление статистики
+        function updateStats() {
+            elements.perClickStat.textContent = formatNumber(perClick);
+            elements.autoClickStat.textContent = formatNumber(autoClick);
+            elements.autoMinerStat.textContent = formatNumber(autoMiner);
+        }
+
+        // Переключение вкладок
+        function switchTab(tabId) {
+            elements.tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabId);
+            });
+            elements.tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `${tabId}-content`);
+            });
+        }
+
+        // Применение темы
+        function applyTheme() {
+            if (darkTheme) {
+                document.body.classList.add('dark-theme');
+                elements.themeDark.checked = true;
+            } else {
+                document.body.classList.remove('dark-theme');
+                elements.themeLight.checked = true;
+            }
+        }
+
+        // Применение языка
+        function applyLanguage() {
+            const lang = translations[language];
+            elements.gameTitle.textContent = lang.title;
+            elements.mainTab.textContent = lang.mainTab;
+            elements.transferTab.textContent = lang.transferTab;
+            elements.shopTab.textContent = lang.shopTab;
+            elements.settingsTab.textContent = lang.settingsTab;
+            elements.nameInput.placeholder = lang.namePlaceholder;
+            elements.balanceText.textContent = lang.balance + ":";
+            elements.leaderboardTitle.textContent = lang.leaderboard;
+            elements.leaderboardPlayer.textContent = lang.player;
+            elements.leaderboardBalance.textContent = lang.balance;
+            elements.chatTitle.textContent = lang.chat;
+            elements.chatInput.placeholder = lang.chatPlaceholder;
+            elements.chatSend.textContent = lang.send;
+            elements.themeTitle.textContent = lang.themeTitle;
+            elements.themeLightLabel.textContent = lang.lightTheme;
+            elements.themeDarkLabel.textContent = lang.darkTheme;
+            elements.languageTitle.textContent = lang.languageTitle;
+            elements.langRuLabel.textContent = lang.russian;
+            elements.langEnLabel.textContent = lang.english;
+            elements.transferTitle.textContent = lang.transferTitle;
+            elements.recipientLabel.textContent = lang.recipientLabel;
+            elements.amountLabel.textContent = lang.amountLabel;
+            elements.transferBtn.textContent = lang.transferBtn;
+            elements.recipientName.placeholder = language === 'ru' ? "Введите ник игрока" : "Enter player nickname";
+            elements.transferAmount.placeholder = language === 'ru' ? "Введите сумму" : "Enter amount";
+            elements.shopTitle.textContent = lang.shopTitle;
+            document.querySelector('.shop-tab[data-shop-tab="click"]').textContent = lang.clickTab;
+            document.querySelector('.shop-tab[data-shop-tab="autoclick"]').textContent = lang.autoclickTab;
+            document.querySelector('.shop-tab[data-shop-tab="autominer"]').textContent = lang.autominerTab;
+            for (const amount in clickUpgrades) {
+                document.getElementById(`click-${amount}-count`).textContent = `${lang.purchased} ${clickUpgrades[amount].count}`;
+            }
+            for (const amount in autoClickUpgrades) {
+                document.getElementById(`autoclick-${amount}-count`).textContent = `${lang.purchased} ${autoClickUpgrades[amount].count}`;
+            }
+            for (const amount in autoMinerUpgrades) {
+                document.getElementById(`autominer-${amount}-count`).textContent = `${lang.purchased} ${autoMinerUpgrades[amount].count}`;
+            }
+            const loadingRow = elements.leaderboard.querySelector('tr');
+            if (loadingRow && (loadingRow.textContent.includes("Загрузка") || loadingRow.textContent.includes("Loading"))) {
+                loadingRow.innerHTML = `<td colspan="3">${lang.loading}</td>`;
+            }
+        }
+
+        // Обработка кликов
+        function handleClick(e) {
+            if (!('ontouchstart' in window)) {
+                const rect = elements.clickArea.getBoundingClientRect();
+                createFireworksEffect(e.clientX - rect.left, e.clientY - rect.top);
+                createClickEffect(e.clientX - rect.left, e.clientY - rect.top);
+                addCoins(perClick);
+            }
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = elements.clickArea.getBoundingClientRect();
+            createFireworksEffect(touch.clientX - rect.left, touch.clientY - rect.top);
+            createClickEffect(touch.clientX - rect.left, touch.clientY - rect.top);
+            addCoins(perClick);
+        }
+
+        function createClickEffect(x, y, animate = true) {
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.textContent = `+${perClick} ₽`;
+            effect.style.left = `${x}px`;
+            effect.style.top = `${y}px`;
+            if (!animate) {
+                effect.style.animation = 'none';
+                effect.style.opacity = '0.5';
+            }
+            elements.clickArea.appendChild(effect);
+            setTimeout(() => effect.remove(), animate ? 500 : 300);
+        }
+
+        function createFireworksEffect(x, y) {
+            const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff'];
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'fireworks-particle';
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 30 + 20;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.setProperty('--dx', `${dx}px`);
+                particle.style.setProperty('--dy', `${dy}px`);
+                elements.clickArea.appendChild(particle);
+                setTimeout(() => particle.remove(), 500);
+            }
+        }
+
+        // Игровая логика
+        function addCoins(amount) {
+            coins += amount;
+            updateUI();
+            saveGame();
+        }
+
+        // Чат
+        function sendChatMessage() {
+            const message = elements.chatInput.value.trim();
+            if (message && playerName) {
+                addChatMessage(playerName, message);
+                elements.chatInput.value = '';
+            }
+        }
+
+        function addChatMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.innerHTML = `<span class="message-username">${sender}:</span> ${message}`;
+            elements.chatMessages.appendChild(messageElement);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+
+        // Перевод монет
+        function transferCoins() {
+            const recipient = elements.recipientName.value.trim();
+            const amount = parseInt(elements.transferAmount.value);
+            const lang = translations[language];
+            
+            elements.transferMessage.textContent = '';
+            elements.transferMessage.style.display = 'none';
+            elements.transferMessage.className = 'transfer-message';
+            
+            if (!recipient) {
+                showTransferMessage(`${lang.transferError} ${lang.transferNoRecipient}`, 'error');
+                return;
+            }
+            
+            if (recipient === playerName) {
+                showTransferMessage(`${lang.transferError} ${lang.transferSelfError}`, 'error');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                showTransferMessage(`${lang.transferError} ${lang.transferInvalidAmount}`, 'error');
+                return;
+            }
+            
+            if (coins < amount) {
+                showTransferMessage(`${lang.transferError} ${lang.transferNotEnough}`, 'error');
+                return;
+            }
+            
+            const leaders = JSON.parse(localStorage.getItem('leaders') || '[]');
+            const recipientIndex = leaders.findIndex(p => p.name === recipient);
+            
+            if (recipientIndex === -1) {
+                showTransferMessage(`${lang.transferError} ${lang.transferNoRecipient}`, 'error');
+                return;
+            }
+            
+            coins -= amount;
+            leaders[recipientIndex].coins += amount;
+            
+            localStorage.setItem('leaders', JSON.stringify(leaders));
+            saveGame();
+            updateLeaderboard();
+            
+            const successMessage = lang.transferCompleted
+                .replace('{amount}', formatNumber(amount))
+                .replace('{recipient}', recipient);
+            
+            showTransferMessage(successMessage, 'success');
+            addChatMessage(lang.system, successMessage);
+            
+            elements.recipientName.value = '';
+            elements.transferAmount.value = '';
+        }
+
+        function showTransferMessage(message, type) {
+            elements.transferMessage.textContent = message;
+            elements.transferMessage.className = `transfer-message transfer-${type}`;
+            elements.transferMessage.style.display = 'block';
+        }
+
+        // Модальное окно смены ника
+        function showNameChangeModal() {
+            const newName = elements.nameInput.value.trim();
+            if (!newName) return;
+            
+            if (newName === playerName) {
+                return;
+            }
+            
+            if (nameChangeCount === 0) {
+                playerName = newName;
+                nameChangeCount++;
+                saveGame();
+                updateLeaderboard();
+                const lang = translations[language];
+                addChatMessage(lang.system, `${lang.nameSet} ${playerName}!`);
+                updateUI();
+                return;
+            }
+            
+            const currentCost = nameChangeCost * Math.pow(10, nameChangeCount - 1);
+            const lang = translations[language];
+            elements.modalText.textContent = coins >= currentCost 
+                ? `${lang.nameChangeConfirm} ${formatNumber(currentCost)} ₽?` 
+                : `${lang.notEnoughCoins} ${formatNumber(currentCost)} ₽)`;
+            
+            elements.modalYes.style.display = coins >= currentCost ? 'block' : 'none';
+            elements.modalYes.textContent = lang.yes;
+            elements.modalNo.textContent = lang.no;
+            elements.modalOverlay.style.display = 'flex';
+        }
+
+        function confirmNameChange() {
+            const currentCost = nameChangeCost * Math.pow(10, nameChangeCount - 1);
+            if (coins >= currentCost) {
+                coins -= currentCost;
+                const newName = elements.nameInput.value.trim();
+                playerName = newName;
+                nameChangeCount++;
+                saveGame();
+                updateLeaderboard();
+                const lang = translations[language];
+                addChatMessage(lang.system, `${lang.nameChanged} ${playerName} ${language === 'ru' ? 'за' : 'for'} ${formatNumber(currentCost)} ₽!`);
+                updateUI();
+            }
+            elements.modalOverlay.style.display = 'none';
+        }
+
+        function cancelNameChange() {
+            elements.nameInput.value = playerName;
+            elements.modalOverlay.style.display = 'none';
+        }
+
+        // Форматирование числа
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Таблица лидеров
+        function updateLeaderboard() {
+            if (!playerName) return;
+            
+            const leaders = JSON.parse(localStorage.getItem('leaders') || '[]');
+            const existing = leaders.findIndex(p => p.name === playerName);
+            
+            if (existing > -1) {
+                leaders[existing].coins = coins;
+            } else {
+                leaders.push({ name: playerName, coins });
+            }
+            
+            leaders.sort((a, b) => b.coins - a.coins);
+            localStorage.setItem('leaders', JSON.stringify(leaders.slice(0, 10)));
+            
+            elements.leaderboard.innerHTML = leaders
+                .slice(0, 10)
+                .map((p, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${p.name}</td>
+                        <td>${formatNumber(Math.floor(p.coins))} ₽</td>
+                    </tr>
+                `).join('');
+        }
+
+        // Сохранение и загрузка
+        function saveGame() {
+            const data = {
+                coins,
+                perClick,
+                autoClick,
+                autoMiner,
+                playerName,
+                nameChangeCount,
+                darkTheme,
+                language,
+                clickUpgrades,
+                autoClickUpgrades,
+                autoMinerUpgrades,
+                lastPlayTime: Date.now()
+            };
+            localStorage.setItem('save', JSON.stringify(data));
+            updateLeaderboard();
+        }
+
+        function loadGame() {
+            const data = JSON.parse(localStorage.getItem('save') || '{}');
+            coins = data.coins || 0;
+            perClick = data.perClick || 1;
+            autoClick = data.autoClick || 0;
+            autoMiner = data.autoMiner || 0;
+            playerName = data.playerName || '';
+            nameChangeCount = data.nameChangeCount || 0;
+            darkTheme = data.darkTheme || false;
+            language = data.language || 'ru';
+            
+            if (data.clickUpgrades) {
+                clickUpgrades = data.clickUpgrades;
+            }
+            
+            if (data.autoClickUpgrades) {
+                autoClickUpgrades = data.autoClickUpgrades;
+            }
+            
+            if (data.autoMinerUpgrades) {
+                autoMinerUpgrades = data.autoMinerUpgrades;
+            }
+            
+            if (data.lastPlayTime) {
+                lastUpdateTime = data.lastPlayTime;
+                localStorage.setItem('lastPlayTime', data.lastPlayTime);
+            }
+            
+            elements.nameInput.value = playerName;
+            updateUI();
+            updateAllShopButtons();
+            updateStats();
+        }
+
+        function updateUI() {
+            elements.coins.textContent = formatNumber(Math.floor(coins));
+            updateAllShopButtons();
+        }
+
+        function generateReferralLink() {
+            updateReferralStats();
+            trackReferral();
+        }
+
+        function updateReferralStats() {
+            const refCounts = JSON.parse(localStorage.getItem("refCounts") || "{}");
+            const referralCount = refCounts[playerName] || 0;
+            const refCountEl = document.getElementById("referral-count");
+            if (refCountEl) refCountEl.textContent = `Приглашённых: ${referralCount}`;
+
+            const topReferrers = Object.entries(refCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const tbody = document.getElementById("referral-leaderboard-body");
+            if (!tbody) return;
+            if (topReferrers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3">Нет данных</td></tr>`;
+            } else {
+                tbody.innerHTML = topReferrers.map(([name, count], index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${name}</td>
+                        <td>${count}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function trackReferral() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrer = urlParams.get("ref");
+            if (referrer && referrer !== playerName) {
+                const refCounts = JSON.parse(localStorage.getItem("refCounts") || "{}");
+                refCounts[referrer] = (refCounts[referrer] || 0) + 1;
+                localStorage.setItem("refCounts", JSON.stringify(refCounts));
+            }
+        }
+
+        const url = new URL(window.location.href);
+        if (playerName) {
+            url.searchParams.set("ref", playerName);
+        }
+        const linkInput = document.getElementById("referral-link");
+        if (linkInput) {
+            linkInput.value = url.toString();
+        }
+
+        function copyReferralLink() {
+            const input = document.getElementById("referral-link");
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert("Ссылка скопирована!");
+            });
+        }
+
+        // Запуск игры
+        init();
+    </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9384541618f2c029',t:'MTc0NTk4NzY4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'938472afffbeb097',t:'MTc0NTk4ODkzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9384c8bea9b353fe',t:'MTc0NTk5MjQ2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
